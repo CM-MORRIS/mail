@@ -1,6 +1,6 @@
 # ignore db and related files
 *.sqlite3
-commerce/auctions/migrations
+mail/mail/migrations/
 
 # mac files
 .DS_Store
@@ -33,6 +33,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.idea/
+
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

@@ -1,3 +1,10 @@
+# ignore db and related files
+*.sqlite3
+commerce/auctions/migrations
+
+# mac files
+.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

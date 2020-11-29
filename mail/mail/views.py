@@ -32,9 +32,11 @@ def compose(request):
     # Check recipient emails
     data = json.loads(request.body)
     emails = [email.strip() for email in data.get("recipients").split(",")]
+    print("receipients: " + str(emails))
+
     if emails == [""]:
         return JsonResponse({
-            "error": "At least one recipient required."
+            "error": "At least one recixpient required."
         }, status=400)
 
     # Convert email addresses to users
@@ -53,10 +55,14 @@ def compose(request):
     body = data.get("body", "")
 
     # Create one email for each recipient, plus sender
-    users = set()
-    users.add(request.user)
-    users.update(recipients)
+
+    users = set() # create empty set
+    users.add(request.user) # add logged in user to set
+    users.update(recipients) # add recepients to the users set
+
     for user in users:
+
+        # prepares email to save
         email = Email(
             user=user,
             sender=request.user,
@@ -64,14 +70,18 @@ def compose(request):
             body=body,
             read=user == request.user
         )
+
         email.save()
+
+        # send the email to all recipients
         for recipient in recipients:
             email.recipients.add(recipient)
         email.save()
 
     return JsonResponse({"message": "Email sent successfully."}, status=201)
 
-
+# <mailbox> is either inbox, sent, or archive will return back to you (in JSON form)
+# a list of all emails in that mailbox, in reverse chronological order.
 @login_required
 def mailbox(request, mailbox):
 

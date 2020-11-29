@@ -13,5 +13,5 @@ Tips:
 
 - If browser doesn't reflect changes to javascript file changes it's because the browser is caching js files.  
 Do a power refresh using:  
-Firefox/Brave : ```ctrl + shift + r```  
+Firefox/Brave : ```option + shift + r```  
 Chrome: ```ctrl + f5```

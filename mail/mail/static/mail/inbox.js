@@ -30,11 +30,11 @@ function send_email() {
           subject: getEmailSubject(),
           body: getEmailBody()
         })
-      })
-      .then(response => response.json())
-      .then(result => {
+    })
+    .then(response => response.json())
+    .then(result => {
         console.log(result);
-      });
+    });
 
     // Once the email has been sent, load the user’s sent mailbox.
     load_mailbox('sent');
@@ -58,6 +58,7 @@ function load_mailbox(mailbox) {
 
     // Show the mailbox in html and hide other views
     document.querySelector('#emails-view').style.display = 'block';
+    document.querySelector('#single-email-view').style.display = 'none';
     document.querySelector('#compose-view').style.display = 'none';
 
     // Show the mailbox name
@@ -75,6 +76,7 @@ function load_mailbox(mailbox) {
         emails.forEach(function(email) {
 
             // getting content of each email and assigning to variables
+            const email_id = email.id;
             const sender = email.sender;
             const subject = email.subject;
             const timestamp = email.timestamp;
@@ -82,14 +84,22 @@ function load_mailbox(mailbox) {
 
             // creating a div (to hold each email preview)
             let element = document.createElement('div');
+            let button = document.createElement('button');
+
+            // creating button that when clicked goes to single email view
+            button.className = "btn btn-sm btn-outline-primary";
+            button.innerHTML = "View";
+            button.addEventListener('click', () => load_single_email(`${email_id}`));
+
 
             // Assigns class name (for css) to each div, different colour background depending if email read
             element.className = (isEmailRead ? "email_preview_read" : "email_preview_unread");
 
-            // adding data of the email to the div
+            // adding data of the email and a button to the div
             element.innerHTML += ` ${timestamp} <br>`;
             element.innerHTML += ` <b>From: </b> ${sender} <br> `;
-            element.innerHTML += ` <b>Subject: </b> ${subject} `;
+            element.innerHTML += ` <b>Subject: </b> ${subject} <br> `;
+            element.appendChild(button);
 
             // Appending to '#emails-view' in inbox.html
             document.querySelector('#emails-view').append(element);
@@ -98,23 +108,90 @@ function load_mailbox(mailbox) {
    });
 }
 
+function load_single_email(email_id) {
+
+    // clear any previous html inside div, as only want to show a single email each time this loads
+    document.querySelector('#single-email-view').innerHTML = "";
+
+    // Show the mailbox in html and hide other views
+    document.querySelector('#emails-view').style.display = 'none';
+    document.querySelector('#compose-view').style.display = 'none';
+    document.querySelector('#single-email-view').style.display = 'block';
+
+    // set status of email wanting to load to 'read' (true)
+    // as clicking on view single email will indiciate it has been opened and therfore read
+    setEmailRead(`${email_id}`);
+
+    // fetch content of email from views, parsing in 'email_id' parameter
+    fetch(`/emails/${email_id}`)
+    .then(response => response.json())
+    .then(email => {
+
+        // logs to console, for debugging purposes
+        console.log(email);
+
+        // retrieve content of email from fetched data
+        const sender = email.sender;
+        const recipients = email.recipients;
+        const subject = email.subject;
+        const timestamp = email.timestamp;
+        const body = email.body;
+
+        // create an empty div to add content to
+        let emailShow = document.createElement('div');
+
+        // add content to newly created div
+        emailShow.innerHTML += `${timestamp} <br>`;
+        emailShow.innerHTML += `<b>To: </b> ${recipients} <br>`;
+        emailShow.innerHTML += `<b>From: </b> ${sender} <br>`;
+        emailShow.innerHTML += `<b>Subject: </b> ${subject} <br>`;
+        emailShow.innerHTML += `<p> ${subject} </p>`;
+
+        // append the div to the html div '#single-email-view' so it dispays in browser
+        document.querySelector('#single-email-view').append(emailShow);
+
+    });
+}
+
 // <-------------------- helper functions --------------------------->
+
+function setEmailRead(email_id) {
+
+    fetch(`/emails/${email_id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+
+            read: email_id.read
+        })
+    })
+    .then(response => response)
+    .then(data => {
+        console.log('Success:', data);
+    });
+}
 
 function getRecepientEmail() {
 
-  // all emails are lower case so using toLowerCase() incase any uppercase values are entered
-  return document.getElementById('compose-recipients').value.toLowerCase();
+    // all emails are lower case so using toLowerCase() incase any uppercase values are entered
+    return document.getElementById('compose-recipients').value.toLowerCase();
 
 }
 
 function getEmailSubject() {
 
-  return document.getElementById('compose-subject').value.toLowerCase();
+    return document.getElementById('compose-subject').value.toLowerCase();
 
 }
 
 function getEmailBody() {
 
-  return document.getElementById('compose-body').value.toLowerCase();
+    return document.getElementById('compose-body').value.toLowerCase();
 
 }
+
+
+// <response>.json() js:  returns a JSON object of the result
+//                   (if the result was written in JSON format, if not it raises an error)
+
+// json.loads()     python: If you have a JSON string, you can parse it by using the method.
+// JSON.stringify() js: Convert a JavaScript object into a string with .

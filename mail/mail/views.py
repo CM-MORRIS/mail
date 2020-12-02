@@ -68,7 +68,6 @@ def compose(request):
             sender=request.user,
             subject=subject,
             body=body,
-            read=user == request.user
         )
 
         email.save()
@@ -122,11 +121,15 @@ def email(request, email_id):
 
     # Update whether email is read or should be archived
     elif request.method == "PUT":
+
         data = json.loads(request.body)
+
         if data.get("read") is not None:
             email.read = data["read"]
+
         if data.get("archived") is not None:
             email.archived = data["archived"]
+
         email.save()
         return HttpResponse(status=204)
 

@@ -2,12 +2,14 @@ textarea {
     min-height: 400px;
 }
 
+/* grey */
 .email_preview_read {
     background-color: #cccccc;
     padding: 20px;
     margin: 10px;
 }
 
+/* White */
 .email_preview_unread {
     background-color: #ffffff;
     padding: 20px;

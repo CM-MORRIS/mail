@@ -44,8 +44,6 @@ function send_email() {
 function compose_email(recipients, subject, body) {
 
   // Show compose view and hide other views
-  // document.querySelector('#emails-view').style.display = 'none';
-  // document.querySelector('#compose-view').style.display = 'block';
   showComposeView();
 
   // Clear out composition fields
@@ -156,35 +154,71 @@ function load_single_email(email_id) {
         const timestamp = email.timestamp;
         const body = email.body;
 
-        // create an empty div to add content to
-        let emailShow = document.createElement('div');
-
-        // add content to newly created div
-        emailShow.innerHTML += `${timestamp} <br>`;
-        emailShow.innerHTML += `<b>To: </b> ${recipients} <br>`;
-        emailShow.innerHTML += `<b>From: </b> ${sender} <br>`;
-        emailShow.innerHTML += `<b>Subject: </b> ${subject} <br>`;
-        emailShow.innerHTML += `<p> ${subject} </p>`;
-
-        // Reply button
-        let replyButton = document.createElement('button');
-        replyButton.className = 'btn btn-sm btn-outline-primary';
-        replyButton.innerHTML = 'Reply';
-        const bodyReply = `On ${timestamp} ${sender} wrote: ${body}`;
-        const subjectReply = subject.includes('Re:') ? subject : `Re: ${subject}`;
-        replyButton.addEventListener('click', () => compose_email(recipients, subjectReply, bodyReply));
-
-        emailShow.appendChild(replyButton);
-
-        // TODO (Add an Re: - If the subject line already begins with Re: , no need to add it again.)
+        const emailInfo = getEmailDetails(timestamp, sender, recipients, subject);
+        const replyButton = getReplyButton(timestamp, sender, recipients, subject, body);
+        const emailBody = getBody(body);
 
         // append the div to the html div '#single-email-view' so it dispays in browser
-        document.querySelector('#single-email-view').append(emailShow);
+        document.querySelector('#single-email-view').appendChild(emailInfo);
+        document.querySelector('#single-email-view').appendChild(replyButton);
+        document.querySelector('#single-email-view').appendChild(emailBody);
 
     });
 }
 
 // <-------------------- helper functions --------------------------->
+
+function getBody(body) {
+
+    let bodyDiv = document.createElement('div');
+
+    // add line break for formatting
+    bodyDiv.innerHTML += `<hr>`;
+
+    // add body of email
+    bodyDiv.innerHTML += `<p> ${body} </p>`;
+
+    return bodyDiv;
+}
+
+function getEmailDetails(timestamp, sender, recipients, subject) {
+
+    let emailInfo = document.createElement('div');
+
+    emailInfo.innerHTML += `${timestamp} <br>`;
+    emailInfo.innerHTML += `<b>From: </b> ${sender} <br>`;
+    emailInfo.innerHTML += `<b>To: </b> ${recipients} <br>`;
+    emailInfo.innerHTML += `<b>Subject: </b> ${subject} <br>`;
+
+    return emailInfo;
+}
+
+function getReplyButton(timestamp, sender, recipients, subject, body) {
+
+    // Create button
+    let replyButton = document.createElement('button');
+
+    // give button name
+    replyButton.innerHTML = 'Reply';
+
+    // give button class name for css style
+    replyButton.className = 'btn btn-sm btn-outline-primary';
+
+    // Auto includes 'Re:' unless already exists dont want to add it again
+    const subjectReply = subject.includes('Re:') ? subject : `Re: ${subject}`;
+
+    // pre fill reply body with relevant text
+    const bodyReply = `On ${timestamp} ${sender} wrote: ${body}`;
+
+    // add event click to reply button to load compose email view
+    replyButton.addEventListener('click', () => compose_email(recipients, subjectReply, bodyReply));
+
+    return replyButton;
+
+}
+
+
+
 function archiveEmail(email_id) {
 
     fetch(`/emails/${email_id}`, {
@@ -268,4 +302,4 @@ function showComposeView() {
 //                   (if the result was written in JSON format, if not it raises an error)
 
 // json.loads()     python: If you have a JSON string, you can parse it by using the method.
-// JSON.stringify() js: Convert a JavaScript object into a string with .
+// JSON.stringify() js: Convert a JavaScript object into a string
